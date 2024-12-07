@@ -33,7 +33,7 @@ const App = () => {
 
     try {
       setIsDownloading(true); // Start the downloading feedback
-      const response = await axios.post("http://127.0.0.1:5000/download", {
+      const response = await axios.post("http://192.168.156.8:5000/download", {
         url: url,
         quality: "bestvideo+bestaudio/best", // Adjust quality here
       });
