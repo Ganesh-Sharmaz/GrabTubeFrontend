@@ -5,7 +5,7 @@ function Header() {
   return (
     <header className="text-white p-4 bg-[#141414] px-20  select-none flex justify-between">
       <div className="flex text-3xl items-center gap-1 font-bold">
-        <img className="h-12" src="/public/download.png" alt="" />
+        <img className="h-12" src="/download.png" alt="" />
         <h1 className="text-5xl font-semibold"> GrabTube</h1>
       </div>
       <Link
