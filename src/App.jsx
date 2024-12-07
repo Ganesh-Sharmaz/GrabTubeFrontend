@@ -1,78 +1,83 @@
 import React, { useState } from "react";
 import axios from "axios";
 import { BiSearch } from "react-icons/bi";
-import { AiOutlineLoading3Quarters } from "react-icons/ai";
-import { LuLoader } from "react-icons/lu";
 import { RiLoaderFill } from "react-icons/ri";
-import { BsDownload } from "react-icons/bs";
 import Features from "./components/Features";
 import Footer from "./components/Footer";
-import About from "./components/About";
-import { Link } from "react-router-dom";
-
+import Paragraph from "./components/Paragraph";
+import HowTo from "./components/HowTo";
+import Header from "./components/Header";
 
 const App = () => {
   const [url, setUrl] = useState("");
   const [videoSrc, setVideoSrc] = useState(""); // Stores the video URL
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(""); // Stores any error messages
+  const [isDownloading, setIsDownloading] = useState(false); // For UI feedback
+
+  // Validate YouTube URL
+  const validateYouTubeUrl = (url) => {
+    const regex = /^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.be)\/.+$/;
+    return regex.test(url);
+  };
 
   const handleDownload = async () => {
     setLoading(true);
+    setError("");
     setVideoSrc(""); // Clear previous video
-    if (url === "") {
+
+    if (!validateYouTubeUrl(url)) {
       setLoading(false);
-      return;
+      return setError("Please enter a valid YouTube URL!");
     }
+
     try {
+      setIsDownloading(true); // Start the downloading feedback
       const response = await axios.post("http://127.0.0.1:5000/download", {
         url: url,
-        quality: "bestvideo+bestaudio/best", // Optional: Adjust quality here
+        quality: "bestvideo+bestaudio/best", // Adjust quality here
       });
 
       if (response.data.status === "success") {
         setVideoSrc(response.data.video_url); // Set the video source URL
       } else {
-        alert("Error: " + response.data.message);
+        setError("Error: " + response.data.message);
       }
     } catch (error) {
-      alert("An error occurred: " + error.message);
+      setError("An error occurred while fetching the video. Please try again.");
+      console.error("Error:", error.message);
+    } finally {
+      setLoading(false);
+      setIsDownloading(false);
     }
-    setLoading(false);
   };
 
   return (
     <div className="bg-black flex flex-col min-h-screen w-full">
-      <header className="text-white p-4 bg-[#141414] px-40  select-none flex items-baseline justify-between">
-        <div className="flex text-3xl items-center gap-2 font-bold">
-          <BsDownload />
-          <h1 className="text-3xl font-semibold"> GrabTube</h1>
-        </div>
-        <Link
-          to="/about"
-          className="text-lg hover:text-blue-500 transition-colors"
-        >
-          About
-        </Link>
-      </header>
-      <div className=" px-48">
-        <div className="w-full ">
-          <div className="my-10 shadow-gray-800  px-10 py-5 pb-10 space-y-4 h-fit rounded-xl bg-[#141414]  flex flex-col items-center">
-            <h1 className="text-6xl font-medium text-white">
-              Youtube Video Downloader{" "}
+      <Header />
+      <div className="px-4 md:px-20 lg:px-48">
+        <div className="w-full">
+          <div className="my-10 shadow-gray-800 px-6 md:px-10 py-5 pb-10 space-y-4 h-fit rounded-xl bg-[#141414] flex flex-col items-center">
+            <h1 className="text-4xl md:text-6xl font-medium text-white text-center">
+              YouTube Video Downloader
             </h1>
-            <p className="text-gray-400">download any Youtube videos</p>
-            <div className="flex items-center w-full px-20">
+            <p className="text-gray-400 text-center">
+              Download any YouTube videos quickly and easily
+            </p>
+            <div className="flex flex-col md:flex-row items-center w-full md:px-10">
               <input
                 type="text"
-                required
-                placeholder="paste your link here..."
-                className="border w-full h-[45px] rounded-l-md text-lg text-justify px-3"
+                aria-label="YouTube URL Input"
+                placeholder="Paste your YouTube link here..."
+                className="border w-full h-[45px] rounded-md md:rounded-l-md text-lg px-3"
                 value={url}
                 onChange={(e) => setUrl(e.target.value)}
+                disabled={loading}
               />
               <button
                 onClick={handleDownload}
-                className={`bg-red-500 rounded-r-md  place-items-center text-white h-[45px]  w-[200px] p-2  hover:bg-red-600 ${
+                aria-label="Download Video"
+                className={`bg-red-500 rounded-md md:rounded-r-md text-white h-[45px] w-full md:w-[200px] p-2 hover:bg-red-600 flex justify-center items-center ${
                   loading && "opacity-50 cursor-not-allowed"
                 }`}
                 disabled={loading}
@@ -84,17 +89,57 @@ const App = () => {
                 )}
               </button>
             </div>
+            {error && <p className="text-red-500 text-center">{error}</p>}
           </div>
         </div>
-        <div>
-          {videoSrc && (
-            <div className="mt-6">
+        {/* Display video */}
+        <div className="mt-6">
+          {isDownloading ? (
+            <div className="text-center">
+              <div className="animate-pulse text-white text-lg">
+                <div className="flex flex-col items-center">
+                  <div className="mb-4">
+                    <RiLoaderFill className="animate-spin scale-150 text-red-500" />
+                  </div>
+                  <p>🎥 Welcome to the *Video Command Center*!</p>
+                  <p>
+                    🛠️ Our servers are hard at work converting your YouTube link
+                    into a downloadable file.
+                  </p>
+                  <p>
+                    🧠 Here’s what’s happening:
+                    <ul className="text-left mt-2">
+                      <li>
+                        1️⃣ **Parsing your link** to ensure it’s a valid YouTube
+                        video.
+                      </li>
+                      <li>
+                        2️⃣ **Fetching video metadata** to get the highest
+                        quality.
+                      </li>
+                      <li>
+                        3️⃣ **Downloading and combining audio and video
+                        streams**—a process that takes extra time for longer
+                        videos.
+                      </li>
+                    </ul>
+                  </p>
+                  <p className="mt-4">
+                    ⚡ Unlike other downloaders, we use powerful backend
+                    algorithms to give you unmatched video quality.
+                  </p>
+                  <p>☕ Grab a coffee while we finish this magic for you!</p>
+                </div>
+              </div>
+            </div>
+          ) : videoSrc ? (
+            <div>
               <video
                 src={videoSrc}
                 controls
-                className=" border rounded shadow-md h-80"
+                className="border rounded shadow-md w-full md:w-3/4 mx-auto h-80"
               />
-              <div className="mt-4">
+              <div className="mt-4 text-center">
                 <a
                   href={videoSrc}
                   download
@@ -104,59 +149,11 @@ const App = () => {
                 </a>
               </div>
             </div>
-          )}
+          ) : null}
         </div>
-        <section className="h-fit py-12 space-y-3 text-gray-400">
-          <p className="">
-            YouTube is the largest video-sharing platform in the world, offering
-            an incredible experience for users to upload, watch, and share
-            videos. However, one thing it doesn’t provide is the ability to
-            download YouTube videos directly. That’s where GrabTube steps in to
-            make your life easier!
-          </p>
-          <p className="">
-            With GrabTube, you can quickly search for your favorite videos and
-            download them effortlessly for free. Whether it’s full-length videos
-            or YouTube Shorts, GrabTube has you covered with its powerful and
-            intuitive downloader. Save content in various formats, including MP4
-            and MP3, with options for high-quality downloads in SQ, HD, 1080p,
-            and even 4K resolution. Whether you’re on a Mac, Android, or Windows
-            device, GrabTube is designed to work seamlessly across platforms,
-            letting you enjoy your favorite content anytime, anywhere.
-          </p>
-          <p className="">
-            Why settle for streaming limitations when GrabTube makes downloading
-            simple, fast, and ad-free? Experience the best way to save and share
-            YouTube content today with GrabTube!
-          </p>
-        </section>
+        <Paragraph />
         <Features />
-        <section className="text-gray-400 space-y-3 py-16">
-          <h1 className="text-4xl w-full text-center pb-5 text-white font-semibold">
-            The Best Free Online YouTube Downloader
-          </h1>
-          <p>
-            GrabTube makes downloading YouTube videos and Shorts fast and
-            simple! Just visit GrabTube.com on any device to download your
-            favorite content for free in MP4, MP3, HD, or even 4K—all without
-            ads. Try GrabTube today for the easiest and most reliable way to
-            save YouTube videos!
-          </p>
-        </section>
-        <section className="w-full h-fit text-white  space-y-7 py-16">
-          <h1 className="text-4xl mb-3 text-center font-semibold pb-5">
-            How to download YouTube videos online via GrabTube?
-          </h1>
-          <p>
-            1. Copy the youtube link of the video and paste it into the input
-            line
-          </p>
-          <p>2. Click "Search" and wait for the video to be ready.</p>
-          <p>
-            3. Select the desired download options and click "Download" or tap
-            on the three dots of the video.
-          </p>
-        </section>
+        <HowTo />
       </div>
       <Footer />
     </div>
