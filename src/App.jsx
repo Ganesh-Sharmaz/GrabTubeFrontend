@@ -33,7 +33,7 @@ const App = () => {
 
     try {
       setIsDownloading(true); // Start the downloading feedback
-      const response = await axios.post(`${import.meta.env.URL}/download`, {
+      const response = await axios.post(`http://${import.meta.env.VITE_BACKEND_URL}/download`, {
         url: url,
         quality: "bestvideo+bestaudio/best", // Adjust quality here
       });
