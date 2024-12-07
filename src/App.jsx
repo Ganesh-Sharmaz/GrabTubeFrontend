@@ -33,10 +33,13 @@ const App = () => {
 
     try {
       setIsDownloading(true); // Start the downloading feedback
-      const response = await axios.post(`http://${import.meta.env.VITE_BACKEND_URL}/download`, {
-        url: url,
-        quality: "bestvideo+bestaudio/best", // Adjust quality here
-      });
+      const response = await axios.post(
+        `https://d796-2401-4900-40f6-591f-5865-8f68-31a2-269d.ngrok-free.app/download`,
+        {
+          url: url,
+          quality: "bestvideo+bestaudio/best", // Adjust quality here
+        }
+      );
 
       if (response.data.status === "success") {
         setVideoSrc(response.data.video_url); // Set the video source URL
